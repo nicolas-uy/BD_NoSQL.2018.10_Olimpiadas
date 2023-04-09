@@ -1,0 +1,93 @@
+1)
+use Examen-2018-10
+db.createCollection("Participantes")
+
+db.Participantes.insertMany([
+{
+	"Nombre":"Sara",
+	"Apellido":"Pérez",
+	"ModalidadParticipación":"Asistente",
+	"Localidad":"Bella Unión",
+	"FechaNacimiento": new Date("2004-07-19")
+},{
+	"Nombre":"Agustin",
+	"Apellido":"Rodriguez",
+	"ModalidadParticipación":"Jurado",
+	"FechaNacimiento": new Date("2010-01-10"),
+	"Teléfono":"2999 9999",
+	"Mail":"arodriguez@gmail.com",
+	"Horario": 1
+},{
+	"Nombre":"Samuel",
+	"Apellido":"Gómez",
+	"ModalidadParticipación":"Jurado",
+	"FechaNacimiento": new Date("1999-09-25"),
+	"Teléfono":"2111 1111",
+	"Mail":"facundo.gomez@utec.edu.uy",
+	"Horario": 2
+},{
+	"Nombre":"Sofía",
+	"Apellido":"Gutierrez",
+	"ModalidadParticipación":"Voluntario",
+	"FechaNacimiento": new Date("1990-03-08"),
+	"Mail":"sofia.gutierrez@utec.edu.uy",
+	"Localidad":"Durazno",
+	"Horario": 1
+},{
+	"Nombre":"Sebastián",
+	"Apellido":"Pérez",
+	"ModalidadParticipación":"Asistente",
+	"Localidad":"Bella Unión",
+	"Horario": 3
+},{
+	"Nombre":"Diego",
+	"Apellido":"López",
+	"ModalidadParticipación":"NoSeSabe",
+	"Horario":2
+}])
+
+2)
+Generar una sentencia que permita recuperar los documentos cuya Localidad sea Bella Unión. ( buscar por minusculas, mayusculas y ademas tildes.)
+	db.Participantes.find({ "Localidad": { $regex: /b[eé]ll[aá] uni[oó]n/i } })
+	
+3)
+Generar una sentencia que permita recuperar los documentos de los que participan como Voluntarios y cuya asistencia sea en todo el día (valor: 1).
+	db.Participantes.find({ "ModalidadParticipación": "Voluntario", "Horario": 1 })
+
+--------------------------------------
+4)
+Generar una sentencia que permita recuperar aquellos documentos asociados a asistentes que sean menores de edad, ya que se requiere pedirles permiso de menor a sus padres.
+	db.Participantes.find({
+		"ModalidadParticipación": "Asistente",
+		"FechaNacimiento": {
+			"$gt": new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate())
+		}
+	});
+
+	
+5)  -------------------   VERIFICAR   -------------------------------
+Agregar a los documentos la clave "PermisoMenor" con el valor Si o No, si es requerido solicitar dicho permiso (como se realizó la búsqueda en el punto 4).
+	db.Participantes.updateMany({
+			"FechaNacimiento": {
+				"$gt": new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate())}
+			},{
+				"$set": { "PermisoMenor": "Si"}}
+	);
+
+	db.Participantes.updateMany(
+		{"FechaNacimiento": {
+				"$lte": new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate())}
+		},{
+			"$set": {"PermisoMenor": "No"}}
+	);
+
+6)
+Agregarle a los documentos la clave Institucion con el valor UTEC para aquellos participantes que tienen cuenta de correo de UTEC.
+	db.Participantes.updateMany(
+		{ "Mail": { $regex: /.*@utec.edu.uy$/i } },
+		{ $set: { "Institucion": "UTEC" } }
+	);
+	
+7)
+Eliminar los documentos cuyo valor para la clave ModalidadParticipacion es NoSeSabe.
+	db.Participantes.deleteMany({ "ModalidadParticipación": "NoSeSabe" });
